@@ -4,4 +4,4 @@
 [![AAAI-24](https://img.shields.io/badge/AAAI_24-Paper_11284-black?labelColor=%233CB371&color=%23FFA500)](https://aaai.org/main-track/)
 [![Pytorch](https://img.shields.io/badge/PyTorch-%23FF6347.svg?e&logo=PyTorch&logoColor=white)](https://pytorch.org/)
 
-[**Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis**](https://github.com/shesshan/CEIB/blob/main/AAAI_2024_CEIB_Camera_Ready.pdf)
+**Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis**[PDF](https://github.com/shesshan/CEIB/blob/main/docs/AAAI_2024_CEIB_Camera_Ready.pdf)
