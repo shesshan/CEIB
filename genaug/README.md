@@ -1,4 +1,3 @@
-confidence_filter.py: several data selection methods
-gen_aug_T5.py: a class for filling in blanks with T5
-total_gen_aug.py: generate augmented examples with T5
-utils.py: several functions that may be useful
+- **total_gen_aug.py**: generate counterfactual samples.
+- gen_aug_T5.py: *fill-in-the-blank* text generation with [T5-XXL](https://huggingface.co/t5-11b) (11b).
+- utils.py: several useful auxiliary functions.
