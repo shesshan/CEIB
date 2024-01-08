@@ -1,18 +1,18 @@
-gpu_id=2
+gpu_id=0
 task_name='ABSC'
-data_dir='data/'
-datasets=('mams')
-train_file='train_subset_3.jsonl'
+data_dir='./data/' # may also set to your customized path for original training corpus
+datasets=('rest14')
+train_file='train.jsonl'
 
 model_name='t5-xxl'
-model_name_or_path='/data/baiyl/models/t5-xxl'
+model_name_or_path='/data/baiyl/models/t5-xxl' # set to your customized path for T5-XXL
 
 mask_ratio=0.5
 aug_num=10
 aug_type='default' 
 label_type='flip' 
 
-pattern_ids='3'
+pattern_ids="0 1 2 3" # may also choose one pattern each time, e.g. set to '3'
 num_beams=1
 max_new_tokens=512
 top_k=20
@@ -46,15 +46,3 @@ do
         --temperature $temperature \
         --repetition_penalty $repetition_penalty
 done
-
-# # LAP14
-# CUDA_VISIBLE_DEVICES=1 python -m genaug.total_gen_aug --model_name 'flan-t5-xxl' --model_name_or_path '/data/baiyl/models/flan-t5-xxl' --seed 1 --task_name 'ABSC' --data_dir 'data/' --dataset_name 'lap14' --mask_ratio 0.5 --aug_type 'default' --label_type 'flip' --do_sample --num_beams 1  --aug_num 10
-
-# # REST15
-# CUDA_VISIBLE_DEVICES=2 python -m genaug.total_gen_aug --model_name 'flan-t5-xxl' --model_name_or_path '/data/baiyl/models/flan-t5-xxl' --seed 1 --task_name 'ABSC' --data_dir 'data/' --dataset_name 'rest15' --mask_ratio 0.5 --aug_type 'default' --label_type 'flip' --do_sample --num_beams 1  --aug_num 10
-
-# # REST16
-# CUDA_VISIBLE_DEVICES=3 python -m genaug.total_gen_aug --model_name 'flan-t5-xxl' --model_name_or_path '/data/baiyl/models/flan-t5-xxl' --seed 1 --task_name 'ABSC' --data_dir 'data/' --dataset_name 'rest16' --mask_ratio 0.5 --aug_type 'default' --label_type 'flip' --do_sample --num_beams 1  --aug_num 10
-
-# # MAMS
-# CUDA_VISIBLE_DEVICES=4 python -m genaug.total_gen_aug --model_name 'flan-t5-xxl' --model_name_or_path '/data/baiyl/models/flan-t5-xxl' --seed 1 --task_name 'ABSC' --data_dir 'data/' --dataset_name 'mams' --mask_ratio 0.5 --aug_type 'default' --label_type 'flip' --do_sample --num_beams 1  --aug_num 10

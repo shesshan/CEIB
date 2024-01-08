@@ -74,6 +74,7 @@ class T5Aug():
             # token ids list
             input_ids = tokenizer(sentences, return_tensors='pt',
                                   padding=True).input_ids.cuda()
+            
             # Refer to default params settings: https://huggingface.co/docs/transformers/v4.30.0/en/main_classes/configuration#transformers.PretrainedConfig
             # Our customized params for text generation:
             # max_new_tokens: 512, do_sample: True, early_stopping: True, num_beams: 1,
