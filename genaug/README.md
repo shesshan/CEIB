@@ -1,3 +1,3 @@
 - **total_gen_aug.py**: generate counterfactual samples.
-- gen_aug_T5.py: *fill-in-the-blank* text generation with T5-XXL.
+- gen_aug_T5.py: *fill-in-the-blank* text generation with [T5-XXL](https://huggingface.co/t5-11b) (11b).
 - utils.py: several useful auxiliary functions.
