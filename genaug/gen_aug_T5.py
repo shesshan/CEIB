@@ -71,15 +71,14 @@ class T5Aug():
             sentences = strings_to_be_generated[batch_idx *
                                                 batch_size:(batch_idx + 1) *
                                                 batch_size]
-            # [2.8] token id list
+            # token ids list
             input_ids = tokenizer(sentences, return_tensors='pt',
                                   padding=True).input_ids.cuda()
-            # [6.18] key params to customize our text generation.
-            # For default params, please refer to: https://huggingface.co/docs/transformers/v4.30.0/en/main_classes/configuration#transformers.PretrainedConfig
-            # do_sample: False, early_stopping: False, num_beams: 1,
-            # temperature: 1.0, top_k: 50, top_p: 1,
-            # repetition_penalty: 1.0, no_repeat_ngram_size: 0,
-            # bad_words_ids: [], num_return_sequences: 1
+            # Refer to default params settings: https://huggingface.co/docs/transformers/v4.30.0/en/main_classes/configuration#transformers.PretrainedConfig
+            # Our customized params for text generation:
+            # max_new_tokens: 512, do_sample: True, early_stopping: True, num_beams: 1,
+            # temperature: 1.0, top_k: 20, top_p: 0.85, 
+            # repetition_penalty: 2.5, no_repeat_ngram_size: 3
             outputs = self.model.generate(
                 input_ids,
                 max_new_tokens=max_new_tokens,
@@ -96,6 +95,7 @@ class T5Aug():
                 eos_token_id=eos_token_id,
                 no_repeat_ngram_size=no_repeat_ngram_size,
                 num_return_sequences=num_return_sequences)
+            
             for (b_id, input_id) in enumerate(input_ids):
                 pred_text = []
                 result = []
@@ -103,8 +103,7 @@ class T5Aug():
                                     num_return_sequences]:
                     result.append([])
                     blanks = []
-                    for token_id in item[
-                            1:]:  # [2.8] remove the first token '<pad>'
+                    for token_id in item[1:]:
                         token_id = token_id.item()
                         if (
                                 token_id >= start_mask_token
@@ -115,10 +114,9 @@ class T5Aug():
                             if len(blanks) == 0:
                                 blanks.append([])
                             blanks[-1].append(token_id)
-                    # [2.8] convert predicted masked-token-id list (e.g. [[13351],[6279],...]) to word list (e.g. [['nice','that',...]])
+                    # decode predicted masked token ids (e.g. [[13351],[6279],...]) to words list (e.g. [['nice','that',...]])
                     for blank in blanks:
                         result[-1].append(tokenizer.decode(blank))
-
                     current_blank = 0
                     output_tokens = []
                     for token in input_id:
@@ -133,7 +131,8 @@ class T5Aug():
                     pred_text.append(tokenizer.decode(output_tokens))
                 pred_texts.append(pred_text)
                 pred_blanks.append(result)
-        # [2.8] return:
-        # 1. pred_texts: predicted text
-        # 2. pred_blanks: list of predicted masked token (i.e. [MASK]) list for each masked text to be augmented.
+        
+        # return:
+        #  - pred_texts: predicted text
+        #  - pred_blanks: list of predicted masked token (i.e. [MASK]) list for each masked text to be augmented.
         return pred_texts, pred_blanks
