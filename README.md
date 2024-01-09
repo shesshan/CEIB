@@ -43,11 +43,12 @@ To mitigate the **spurious correlation** problem for ABSA, we propose a novel **
 
 ### Preparation
 -  **Data** <br>
-We have provided the generated counterfactual samples in [data/augmented_t5_xxl/](/data/augmented_t5_xxl/). You can also run the command: `bash aug_data.sh` to generate the counterfactual data yourself. 
+We have provided the generated counterfactual data in [data/augmented_t5_xxl/](/data/augmented_t5_xxl/).
+<br> You can also run the command: `bash aug_data.sh` to generate the counterfactual data yourself. In this case, you should download [t5-xxl](https://huggingface.co/t5-11b) and set the parameter `--model_name_or_path` in [aug_data.sh](/aug_data.sh) to your local directory.
 
 -  **Models** <br>
-**BERT**: Download the PyTorch version `bert-base-uncased` from [huggingface](https://huggingface.co/bert-base-uncased). Then, you can set the parameter `--model_dir` to your local directory. <br>
-**T5<sup>*</sup>** (Optional): Download `t5-xxl` from [huggingface](https://huggingface.co/t5-11b) and set the parameter `--model_name_or_path` in [aug_data.sh](/aug_data.sh) to your local directory. Then, you can try the data augmentation yourself. 
+**BERT**: Download the PyTorch version [bert-base-uncased](https://huggingface.co/bert-base-uncased) and set the parameter `--model_dir` to your local directory. <br>
+<!-- **T5<sup>*</sup>** (Optional): Download `t5-xxl` from [huggingface](https://huggingface.co/t5-11b) and set the parameter `--model_name_or_path` in [aug_data.sh](/aug_data.sh) to your local directory. Then, you can try the data augmentation yourself. -->
  
 
 ### Training
