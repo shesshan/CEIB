@@ -1,21 +1,73 @@
 ![](https://img.shields.io/badge/version-1.0.1-blue)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/shesshan/CEIB/blob/main/LICENSE)
-[![AAAI-24](https://img.shields.io/badge/AAAI_2024-Paper_11284-black?labelColor=%233CB371&color=%23FFA500)](https://aaai.org/main-track/)
+[![AAAI-24](https://img.shields.io/badge/AAAI-2024-black?color=%23FFA500)](https://aaai.org/main-track/)
 [![Pytorch](https://img.shields.io/badge/PyTorch-%23FF6347.svg?e&logo=PyTorch&logoColor=white)](https://pytorch.org/)
 
-# CEIB
+# 🪄CEIB
 
-Hi there👋! I'm delighted to share our paper [Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) presents in AAAI 2024 🎉.
+Hi there👋, this repo contains the PyTorch implementation for our paper:
 
-<!-- [Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) <br> Mingshan Chang, Min Yang<sup>*</sup>, Qingshan Jiang, Ruifeng Xu. AAAI, 2024.--> 
+[Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) 
 
-> Huge success in the ABSA task❓ 🔎 We found that deep neural networks are prone to learning ***spurious correlations*** between input features and output labels, leading to poor robustness and generalization capability❗️
+to be present in AAAI 2024! 🎉 
+
+## 📜 Summary
+> Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, leading to poor robustness and generalization capability!
+
+An example of the spurious correlation problem:
 
 <img src="/docs/example.png" width = "55%" />
 
-In this paper, we propose a novel Counterfactual-Enhanced Information Bottleneck framework (called **CEIB**) to mitigate the spurious correlation problem for ABSA. Concretely, **(1)** we employed the information bottleneck (IB) principle to discard superfluous information and shallow patterns while preserving sufficient information about the sentiment labels; **(2)** extended the original IB to a factual-counterfactual balancing setting to learn more robust and balanced representations against the dataset bias; **(3)** devised a multi-pattern prompting method and leveraged LLM to automatically generate counterfactual samples with promising quality.
+To mitigate the **spurious correlation** problem for ABSA, we propose a novel **C**ounterfactual-**E**nhanced **I**nformation **B**ottleneck framework (called **CEIB**), which extends the information bottleneck (IB) principle into a factual-counterfactual balancing setting and incorporates augmented counterfactual data, to learn more robust and generalizable representations.
+<!-- In this paper, we propose a novel **C**ounterfactual-**E**nhanced **I**nformation **B**ottleneck framework (CEIB) to mitigate the **spurious correlation** problem for ABSA. CEIB extends the information bottleneck (IB) principle into a factual-counterfactual balancing setting and incorporates augmented counterfactual data, to learn more robust and generalizable representations.-->
+- We employ the IB principle to discard superfluous information and shallow patterns while preserving sufficient sentiment information about the target label.
+- We devise a multi-pattern prompting method, which utilizes LLM to automatically generate counterfactual samples featuring identical spurious context words while different sentiment labels for the original training data.
+- We separate the mutual information in original IB objective into factual and counterfactual parts. By balancing the predictive information of these two parts, we can learn more robust and generalizable representations against the dataset bias.
 
-## 🧩 Model Architecture
-<img src="/docs/CEIB_framework.png" width = "100%" />
+## 🧩 Architecture
+<img src="/docs/CEIB_framework.png" width = "90%" />
+
+(a) a **counterfactual data augmentation** module that utilizes LLM to generate counterfactual data for the original training data.
+
+(b) an **information bottleneck** module with a factual-counterfactual balance setting to learn more robust and generalizable representations.
+
+## 🎯 Main Results
+
 
 ## 🗂 Code & Data
+### Requirements
+- Python 3.9.7
+- PyTorch 1.11.0
+- [Transformers](https://github.com/huggingface/transformers) 4.18.0
+- CUDA 11.0
+
+### Preparation
+-  **BERT** <br>
+Download the PyTorch version pre-trained `bert-base-uncased` model from [huggingface](https://huggingface.co/bert-base-uncased). Then, you can set the parameter `--model_dir` to your local directory.
+-  **T5** <br>
+Download the `t5-xxl` model from [huggingface](https://huggingface.co/t5-11b) if you'd like to generate the counterfactual data yourself. 
+
+### Training
+- Run the command
+> bash run_CEIB_xxx.sh
+
+('xxx' corresponds to dataset, e.g. run `bash run_CEIB_res14.sh` to train with REST14 dataset.)
+
+- Optional arguments can be found in [run.py](/run.py). Feel free to set parameters e.g. `--save_folder`(save training results) and `--data_dir`(load training&testing data) to your customized path.
+
+### Citation
+```bibtex
+@article{incoming~,
+title = {Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis},
+author = {Chang, Mingshan and Yang, Min and Jiang, Qingshan and Xu, Ruifeng},
+journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+volume = {},
+pages = {},
+year = {2024},
+issn = {},
+doi = {},
+url = {}
+}
+```
+
+Please cite our paper and kindly give a star if you find this repo useful💡.
