@@ -4,7 +4,7 @@ save_folder='./checkpoints/CEIB' # set to your customized path to save/load chec
 data_dir='./data/' 
 source_domain='mams'
 target_domain='mams'
-model_dir='./bert-base-uncased' # # set to your customized path to 'bert-base-uncased' model.
+model_dir='./bert-base-uncased' # set to your customized path to 'bert-base-uncased' model.
 config_file='./config/bert_config.json'
 
 num_train_epochs=20
