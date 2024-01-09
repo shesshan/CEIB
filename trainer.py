@@ -8,7 +8,6 @@ from torch import optim
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy.special import softmax
-# from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 import torch.distributed as dist
 from tqdm import tqdm, trange
@@ -16,6 +15,7 @@ from utils.losses import *
 from transformers import AdamW
 from torch.nn.utils.rnn import pad_sequence
 from sklearn.metrics import f1_score
+from tensorboardX import SummaryWriter
 
 logger = logging.getLogger(__name__)
 
@@ -211,13 +211,13 @@ def get_optimizer(args, model):
     }]
 
     if args.optimizer == 'adam':
-        # default lr=1e-3, eps=1e-8, weight_decay=0.0
+        # default: lr=1e-3, eps=1e-8, weight_decay=0.0
         logging.info('using Adam optimizer.')
         return optim.Adam(model.parameters(),
                           lr=args.lr,
                           weight_decay=args.weight_decay)
     elif args.optimizer == 'adamw':
-        # default lr=1e-3, eps=1e-6, weight_decay=0.0
+        # default: lr=1e-3, eps=1e-6, weight_decay=0.0
         logging.info('using AdamW optimizer.')
         logging.info('Learning Rate of no-weight-decay params: [{}]'.format(
             args.nd_lr))
@@ -225,9 +225,9 @@ def get_optimizer(args, model):
 
 
 def train(args, model, train_dataset, test_dataset):
-    # tb_writer = SummaryWriter(comment='_{}_{}'.format(
-    #     args.source_domain, 'baseline' if 'baseline' in
-    #     args.search_type else 'CEIB'))
+    tb_writer = SummaryWriter(comment='_{}_{}'.format(
+        args.source_domain, 'baseline' if 'baseline' in
+        args.search_type else 'CEIB'))
 
     args.train_batch_size = args.per_gpu_train_batch_size
     train_sampler = RandomSampler(train_dataset)
@@ -281,13 +281,14 @@ def train(args, model, train_dataset, test_dataset):
             model.train()
             batch = tuple(t.to(args.device) for t in batch)
             optimizer.zero_grad()
-            # factual
+    
             if args.cf:
                 inputs, cf_inputs, labels = get_input_from_batch(args, batch)
             else:
                 inputs, labels = get_input_from_batch(args, batch)
+                
             outputs = model(**inputs)
-            # note the output may contain only a single output, carefully using index!!
+            # outputs may contain only one single element, carefully using index!
             if len(outputs) == 1:
                 logits = outputs
             else:
@@ -303,17 +304,9 @@ def train(args, model, train_dataset, test_dataset):
                 logits = softmax_func(logits)
                 logits_cf = softmax_func(logits_cf)
                 
-                # print(torch.mean(logits * logits_cf.log()))
-                # print(torch.mean(logits * logits.log()))
-                # print(xent_loss)
-                # assert False
-                # default: alpha=0.1, gamma=0.01
                 info_loss = - args.alpha * torch.mean(
                     logits * logits_cf.log()) + args.gamma * torch.mean(
                         logits * logits.log())
-                # info_loss = torch.mean(
-                #     logits * logits_cf.log()) + args.gamma * torch.mean(
-                #         logits * logits.log())
 
                 loss = xent_loss + info_loss
             else:
@@ -329,15 +322,13 @@ def train(args, model, train_dataset, test_dataset):
             tr_loss += loss.item()
 
             if (step + 1) % args.gradient_accumulation_steps == 0:
-                # scheduler.step()  # Update learning rate schedule
                 optimizer.step()
                 model.zero_grad()
                 global_step += 1
 
-                # Log metrics
                 if args.logging_steps > 0 and global_step % args.logging_steps == 0:
                     results, eval_loss = evaluate(args, test_dataset, model)
-                    # Save model checkpoint
+                    # save checkpoint
                     if not args.arts_test:
                         if results['acc'] > max_acc:
                             max_acc = results['acc']
@@ -348,8 +339,7 @@ def train(args, model, train_dataset, test_dataset):
                         tb_writer.add_scalar('eval_{}'.format(key), value,
                                              global_step)
                     tb_writer.add_scalar('eval_loss', eval_loss, global_step)
-                    # tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
-
+                    
                     tb_writer.add_scalar('train_loss',
                                          (tr_loss - logging_loss) /
                                          args.logging_steps, global_step)
@@ -407,11 +397,9 @@ class Confidence_Filter(object):
                        rmdup_num=1):
         # eval_data: [all_aug_examples]
         # recover_type:
-        # 'max_prevla': for each example, choose the most likely one whose label is preserved
         # 'max_eachla': for each example, choose the most likely one for each label if possible
         # 'max_otherla': for each example, choose the most likely one whose label is flipped
-        # 'global_topk': choose examples who are among the topk confident
-        # 'global_topp': chooce examples whose confidence > topp
+       
         example_num = len(eval_data)
         label_map = self.args.label_map # {'sentiment':'number'}
         inverse_label_map = {
@@ -423,52 +411,8 @@ class Confidence_Filter(object):
         filtered_num = dict()
         _, rearranged_examples = self._rearrange_examples(
             eval_data
-        )  # List[List], augmented examples of each original example
-        # eval_dataset = generate_dataset(
-        #     self.args, eval_data, tokenizer=self.tokenizer)
-
-        # if recover_type == ('max_prevla'):
-        #     examples = [e for e in aug_examples if e.label == e.orig_label]
-        #     if len(examples) == 0:
-        #         continue
-        #     orig_la = label_map[examples[0].orig_label]
-        #     la = orig_la
-        #     logits = self.validate(
-        #         wrapper, examples)['logits']
-        #     logits = softmax(logits/10, axis=1)
-        #     # max_idx=np.argmax(logits[:,orig_la])
-        #     max_idx = -1
-        #     for (idx, logit) in enumerate(logits):
-        #         if np.argmax(logit) == la and (max_idx == -1 or logit[la] > logits[max_idx, la]):
-        #             max_idx = idx
-        #     if max_idx != -1:
-        #         return_examples.append(examples[max_idx])
-        #         label_trans = '{} -> {}'.format(
-        #             examples[max_idx].orig_label, examples[max_idx].label)
-        #         filtered_num.setdefault(label_trans, 0)
-        #         filtered_num[label_trans] += 1
-        # elif recover_type == ('max_prevla_comb'):
-        #     examples = aug_examples
-        #     if len(examples) == 0:
-        #         continue
-        #     orig_la = label_map[examples[0].orig_label]
-        #     la = orig_la
-        #     logits = self.validate(
-        #         wrapper, examples)['logits']
-        #     logits = softmax(logits/10, axis=1)
-        #     # max_idx=np.argmax(logits[:,orig_la])
-        #     max_idx = -1
-        #     for (idx, logit) in enumerate(logits):
-        #         if np.argmax(logit) == la and (max_idx == -1 or logit[la] > logits[max_idx, la]):
-        #             max_idx = idx
-        #     if max_idx != -1:
-        #         new_example = copy.deepcopy(examples[max_idx])
-        #         new_example.label = inverse_label_map[la]
-        #         return_examples.append(new_example)
-        #         label_trans = '{} -> {}'.format(
-        #             examples[max_idx].orig_label, examples[max_idx].label)
-        #         filtered_num.setdefault(label_trans, 0)
-        #         filtered_num[label_trans] += 1
+        )  # List[List], augmented examples for each original example
+        
         if recover_type == ('max_otherla'):
             for aug_examples in rearranged_examples:
                 orig_la = label_map[aug_examples[0].orig_label]
@@ -494,30 +438,6 @@ class Confidence_Filter(object):
                             inverse_label_map[orig_la], inverse_label_map[la])
                         filtered_num.setdefault(label_trans, 0)
                         filtered_num[label_trans] += 1
-        # elif recover_type == ('max_otherla_comb'):
-        #     orig_la = label_map[aug_examples[0].orig_label]
-        #     examples = aug_examples
-        #     if len(examples) == 0:
-        #         continue
-        #     logits = self.validate(
-        #         wrapper, examples)['logits']
-        #     logits = softmax(logits/10, axis=1)
-        #     for la in range(label_num):
-        #         if la == orig_la:
-        #             continue
-        #         max_idx = -1
-        #         for (idx, logit) in enumerate(logits):
-        #             if np.argmax(logit) == la and (max_idx == -1 or logit[la] > logits[max_idx, la]):
-        #                 max_idx = idx
-        #         if max_idx != -1:
-        #             new_example = copy.deepcopy(examples[max_idx])
-        #             new_example.label = inverse_label_map[la]
-        #             return_examples.append(new_example)
-        #             label_trans = '{} -> {}'.format(
-        #                 examples[0].orig_label, inverse_label_map[la])
-        #             filtered_num.setdefault(label_trans, 0)
-        #             filtered_num[label_trans] += 1
-        # We may flip the label according to the filter
         elif recover_type == ('max_eachla'):
             for examples in rearranged_examples:
                 logits = self._validate(examples)[
@@ -538,157 +458,7 @@ class Confidence_Filter(object):
                             examples[0].orig_label, inverse_label_map[la])
                         filtered_num.setdefault(label_trans, 0)
                         filtered_num[label_trans] += 1
-        # elif recover_type == ('max_eachla_sep'):
-
-        #         for la in range(label_num):
-        #             if (wrapper.config.task_name == 'record' or wrapper.config.task_name == 'wsc') and la == 0:
-        #                 continue
-        #             examples = [
-        #                 e for e in aug_examples if label_map[e.label] == la]
-        #             if len(examples) == 0:
-        #                 continue
-        #             logits = self.validate(
-        #                 wrapper, examples)['logits']
-        #             logits = softmax(logits/10, axis=1)
-        #             max_idx = -1
-        #             for (idx, logit) in enumerate(logits):
-        #                 if np.argmax(logit) == la and (max_idx == -1 or logit[la] > logits[max_idx, la]):
-        #                     max_idx = idx
-        #             if max_idx != -1:
-        #                 return_examples.append(examples[max_idx])
-        #                 label_trans = '{} -> {}'.format(
-        #                     examples[0].orig_label, inverse_label_map[la])
-        #                 filtered_num.setdefault(label_trans, 0)
-        #                 filtered_num[label_trans] += 1
-        # elif recover_type.startswith('global_topk'):
-        #     for orig_la in range(label_num):
-        #         if 'sep' not in recover_type:
-        #             examples = [e for e in eval_data if (
-        #                 label_map[e.orig_label] == orig_la)]
-        #             if len(examples) == 0:
-        #                 continue
-        #             logits = self.validate(
-        #                 wrapper, examples)['logits']
-        #             logits = softmax(logits/10, axis=1)
-        #         for new_la in range(label_num):
-        #             record_guids = defaultdict(int)
-        #             if 'sep' in recover_type:
-        #                 examples = [e for e in eval_data if (
-        #                     label_map[e.orig_label] == orig_la and label_map[e.label] == new_la)]
-        #                 if len(examples) == 0:
-        #                     continue
-        #                 logits = self.validate(
-        #                     wrapper, examples)['logits']
-        #                 logits = softmax(logits/10, axis=1)
-        #             aug_num = fixla_num[orig_la][new_la]
-        #             sortedindexs = np.argsort(logits[:, new_la])[::-1]
-        #             for k in range(aug_num):
-        #                 if 'rmdup' in recover_type and record_guids[examples[sortedindexs[k]].guid] >= rmdup_num:
-        #                     continue
-        #                 new_example = copy.deepcopy(examples[sortedindexs[k]])
-        #                 new_example.label = inverse_label_map[new_la]
-        #                 return_examples.append(new_example)
-        #                 label_trans = '{} -> {}'.format(
-        #                     inverse_label_map[orig_la], inverse_label_map[new_la])
-        #                 filtered_num.setdefault(label_trans, 0)
-        #                 filtered_num[label_trans] += 1
-        #                 record_guids[new_example.guid] += 1
-        # elif recover_type.startswith('global_topp'):
-        #     for orig_la in range(label_num):
-        #         if 'sep' not in recover_type:
-        #             examples = [e for e in eval_data if (
-        #                 label_map[e.orig_label] == orig_la)]
-        #             if len(examples) == 0:
-        #                 continue
-        #             logits = self.validate(
-        #                 wrapper, examples)['logits']
-        #             logits = softmax(logits, axis=1)
-        #         for new_la in range(label_num):
-        #             record_guids = defaultdict(int)
-        #             if 'sep' in recover_type:
-        #                 examples = [e for e in eval_data if (
-        #                     label_map[e.orig_label] == orig_la and label_map[e.label] == new_la)]
-        #                 if len(examples) == 0:
-        #                     continue
-        #                 logits = self.validate(
-        #                     wrapper, examples)['logits']
-        #                 logits = softmax(logits, axis=1)
-        #             for (e, logit) in zip(examples, logits):
-        #                 if 'rmdup' in recover_type and record_guids[e.guid] >= rmdup_num:
-        #                     continue
-        #                 if logit[new_la] >= fixla_ratio[orig_la][new_la]:
-        #                     new_example = copy.deepcopy(e)
-        #                     new_example.label = inverse_label_map[new_la]
-        #                     return_examples.append(new_example)
-        #                     # return_examples.append(e)
-        #                     label_trans = '{} -> {}'.format(
-        #                         inverse_label_map[orig_la], inverse_label_map[new_la])
-        #                     filtered_num.setdefault(label_trans, 0)
-        #                     filtered_num[label_trans] += 1
-        #                     record_guids[e.guid] += 1
-        # elif recover_type == ('believe_cls'):
-        #     logits = self.validate(wrapper, eval_data)['logits']
-        #     for (e, logit) in zip(eval_data, logits):
-        #         orig_la = label_map[e.orig_label]
-        #         new_la = np.argmax(logit)
-        #         new_example = copy.deepcopy(e)
-        #         new_example.label = inverse_label_map[new_la]
-        #         return_examples.append(new_example)
-        #         # return_examples.append(e)
-        #         label_trans = '{} -> {}'.format(
-        #             inverse_label_map[orig_la], inverse_label_map[new_la])
-        #         filtered_num.setdefault(label_trans, 0)
-        #         filtered_num[label_trans] += 1
-        # elif recover_type.startswith('deterministic_topk'):
-        #     for orig_la in range(label_num):
-        #         if 'sep' not in recover_type:
-        #             examples = [e for e in eval_data if (
-        #                 label_map[e.orig_label] == orig_la)]
-        #             if len(examples) == 0:
-        #                 continue
-        #             logits = self.validate(
-        #                 wrapper, examples)['logits']
-        #             logits = softmax(logits/10, axis=1)
-        #         for new_la in range(label_num):
-        #             if 'sep' in recover_type:
-        #                 examples = [e for e in eval_data if (
-        #                     label_map[e.orig_label] == orig_la and label_map[e.label] == new_la)]
-        #                 if len(examples) == 0:
-        #                     continue
-        #                 logits = self.validate(
-        #                     wrapper, examples)['logits']
-        #                 logits = softmax(logits/10, axis=1)
-        #             aug_num = fixla_num[orig_la][new_la]
-        #             # prepare sorted grouped list
-        #             guids = []
-        #             for e in examples:
-        #                 if e.guid not in guids:
-        #                     guids.append(e.guid)
-        #             guid_map = {y: x for (x, y) in enumerate(guids)}
-        #             new_examples = [[] for _ in range(len(guids))]
-        #             for (e, score) in zip(examples, logits[:, new_la]):
-        #                 new_examples[guid_map[e.guid]].append((e, score))
-        #             for i in range(len(new_examples)):
-        #                 new_examples[i] = sorted(
-        #                     new_examples[i], key=lambda x: x[1])[::-1]
-        #             # prepare sorted ungrouped list
-        #             sorted_ungrouped_examples = []
-        #             for j in range(len(new_examples[0])):
-        #                 tmp_examples = []
-        #                 for i in range(len(new_examples)):
-        #                     tmp_examples.append(new_examples[i][j])
-        #                 tmp_examples = sorted(
-        #                     tmp_examples, key=lambda x: x[1])[::-1]
-        #                 sorted_ungrouped_examples += tmp_examples
-        #             for (e, score) in sorted_ungrouped_examples[:aug_num]:
-        #                 new_example = copy.deepcopy(e)
-        #                 new_example.label = inverse_label_map[new_la]
-        #                 return_examples.append(new_example)
-        #                 # return_examples.append(e)
-        #                 label_trans = '{} -> {}'.format(
-        #                     inverse_label_map[orig_la], inverse_label_map[new_la])
-        #                 filtered_num.setdefault(label_trans, 0)
-        #                 filtered_num[label_trans] += 1
+        
         return return_examples, filtered_num
 
     def del_finetuned_model(self):
@@ -724,15 +494,7 @@ class Confidence_Filter(object):
 
         preds_list = None
         out_label_ids = None
-        # eval_loss = 0.0
-        # nb_eval_steps = 0
-
-        # # Eval
-        # logging.info("***** Augmented Counterfactual Data Evaluation *****")
-        # logging.info("  Num examples = %d", len(eval_dataset))
-        # logging.info("  Batch size = %d", eval_batch_size)
-
-        # CELoss = nn.CrossEntropyLoss()
+        
         for batch in tqdm(eval_dataloader, desc='Evaluating'):
             self.model.eval()
             batch = tuple(t.to(self.args.device) for t in batch)
@@ -742,9 +504,7 @@ class Confidence_Filter(object):
                                                       do_eval=True)
                 outputs = self.model(**inputs)
                 logits = outputs[0]
-                # tmp_eval_loss = CELoss(logits, labels)
-                # eval_loss += tmp_eval_loss.mean().item()
-            # nb_eval_steps += 1
+                
             if preds_list is None:
                 preds_list = logits.detach().cpu().numpy()
                 out_label_ids = labels.detach().cpu().numpy()
@@ -756,26 +516,6 @@ class Confidence_Filter(object):
                                           labels.detach().cpu().numpy(),
                                           axis=0)
         predictions = np.argmax(preds_list, axis=1)
-
-        # eval_loss = eval_loss / nb_eval_steps
-
-        # scores = {}
-        # if metrics:
-        #     for metric in metrics:
-        #         if metric == 'acc':
-        #             scores[metric] = simple_accuracy(predictions,
-        #                                              out_label_ids)
-        #         elif metric == 'f1':
-        #             scores[metric] = f1_score(out_label_ids,
-        #                                       predictions,
-        #                                       average='macro')
-        #         else:
-        #             raise ValueError(f"Metric '{metric}' not implemented")
-
-        # logging.info('***** Evaluation Results *****')
-        # logging.info("  eval loss: %s", str(eval_loss))
-        # for key in sorted(scores.keys()):
-        #     logging.info("  %s = %s", key, str(scores[key]))
 
         return {
             'logits': preds_list,
@@ -803,14 +543,12 @@ def evaluate(args, eval_dataset, model, return_dict=False):
     out_label_ids = None
     CELoss = nn.CrossEntropyLoss()
     for batch in eval_dataloader:
-        # for batch in tqdm(eval_dataloader, desc='Evaluating'):
         model.eval()
         batch = tuple(t.to(args.device) for t in batch)
         with torch.no_grad():
             inputs, labels = get_input_from_batch(args, batch, do_eval=True)
             outputs = model(**inputs)
             logits = outputs[0]
-            # print(logits.size())
             tmp_eval_loss = CELoss(logits, labels)
             eval_loss += tmp_eval_loss.mean().item()
         nb_eval_steps += 1
@@ -861,7 +599,6 @@ def evaluate_badcase(args, eval_dataset, model, word_vocab):
     preds = None
     out_label_ids = None
     for batch in eval_dataloader:
-        # for batch in tqdm(eval_dataloader, desc='Evaluating'):
         model.eval()
         batch = tuple(t.to(args.device) for t in batch)
         with torch.no_grad():
@@ -911,12 +648,12 @@ def compute_metrics(preds, labels):
 
 
 def save_checkpoint(args, model, global_step, optimizer=None):
-    """Saves model to checkpoints."""
+    """Saves model to checkpoints.
+    """
     if not os.path.exists(str(args.save_folder)):
         os.mkdir(str(args.save_folder))
     save_path = '{}/{}/'.format(
-        args.save_folder,
-        ('baseline' if 'baseline' in args.search_type else 'ceib'))
+        args.save_folder, 'CEIB' if args.cf else 'baseline')
     if not os.path.exists(save_path):
         os.mkdir(save_path)
 
@@ -934,11 +671,11 @@ def save_checkpoint(args, model, global_step, optimizer=None):
 
 
 def load_checkpoint(args, model):
-    """load pre-train model for representation learning.
+    """load model from checkpoints.
     """
     if not os.path.exists(
             str(args.save_folder
-                )):  # default: ./checkpoints/CEIB/bert_spc_xxx_xxx
+                )):   # default: ./checkpoints/CEIB/bert_spc_xxx_xxx
         os.mkdir(str(args.save_folder))
     save_path = '{}/{}'.format(str(args.save_folder), 'CEIB' if args.cf else 'baseline')
     if not os.path.exists(save_path):

@@ -74,7 +74,7 @@ def parse_args():
     parser.add_argument(
         '--save_folder',
         type=str,
-        default='./checkpoint/',
+        default='./checkpoint/CEIB',
         help=
         'Directory to save training results: models, eval results, etc.'
     )
@@ -220,7 +220,7 @@ def main():
     args = parse_args()
     check_args(args)
 
-    # DIR: default: ./checkpoint/
+    # DIR: default: ./checkpoint/CEIB/
     if not os.path.exists(args.save_folder):
         os.mkdir(args.save_folder)
 
