@@ -1,18 +1,18 @@
 gpu_id=0
 task_name='ABSC'
-data_dir='./data/' # may also set to your customized path for original training corpus
-datasets=('rest14')
+data_dir='./data/' # set to your customized path to original training corpus
+datasets=('rest14' 'lap14') 
 train_file='train.jsonl'
 
 model_name='t5-xxl'
-model_name_or_path='/data/baiyl/models/t5-xxl' # set to your customized path for T5-XXL
+model_name_or_path='./llms/t5-xxl' # set to your customized path to T5-XXL
 
 mask_ratio=0.5
 aug_num=10
 aug_type='default' 
 label_type='flip' 
 
-pattern_ids="0 1 2 3" # may also choose one pattern each time, e.g. set to '3'
+pattern_ids="0 1 2 3" # choose the prompting patterns
 num_beams=1
 max_new_tokens=512
 top_k=20
