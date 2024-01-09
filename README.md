@@ -42,16 +42,14 @@ To mitigate the **spurious correlation** problem for ABSA, we propose a novel **
 - CUDA 11.0
 
 ### Preparation
--  **BERT** <br>
-Download the PyTorch version pre-trained `bert-base-uncased` model from [huggingface](https://huggingface.co/bert-base-uncased). Then, you can set the parameter `--model_dir` to your local directory.
--  **T5** <br>
-Download the `t5-xxl` model from [huggingface](https://huggingface.co/t5-11b) if you'd like to generate the counterfactual data yourself. 
+-  **Models** <br>
+**BERT**: Download the PyTorch version `bert-base-uncased` from [huggingface](https://huggingface.co/bert-base-uncased). Then, you can set the parameter `--model_dir` to your local directory. <br>
+**T5<sup>*</sup>** (Optional): Download `t5-xxl` from [huggingface](https://huggingface.co/t5-11b) and set the parameter `--model_name_or_path` in [aug_data.sh](/aug_data.sh) to your local directory. Then, you can try the data augmentation yourself. 
+-  **Data** <br>
+We have provided the generated counterfactual data in [data/augmented_t5_xxl/](/data/augmented_t5_xxl/). You can also run the command: `bash aug_data.sh` to generate counterfactual data yourself.  
 
 ### Training
-- Run the command
-> bash run_CEIB_xxx.sh
-
-('xxx' corresponds to dataset, e.g. run `bash run_CEIB_res14.sh` to train with REST14 dataset.)
+- Run the command: `bash run_CEIB_xxx.sh`, e.g. run `bash run_CEIB_res14.sh` to train with REST14 dataset.
 
 - Optional arguments can be found in [run.py](/run.py). Feel free to set parameters e.g. `--save_folder`(save training results) and `--data_dir`(load training&testing data) to your customized path.
 
