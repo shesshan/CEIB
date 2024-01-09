@@ -5,10 +5,11 @@
 
 # CEIB
 
-[Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) (incoming published) <br>
-Mingshan Chang, Min Yang<sup>*</sup>, Qingshan Jiang, Ruifeng Xu. AAAI, 2024. 
+Hi there👋! I'm delighted to share our paper [Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) presents in AAAI 2024.
 
->📌 Despite having achieved remarkable success in the ABSA task, deep neural networks are prone to learning ***spurious correlations*** between input features and output labels, leading to poor robustness and generalization capability.
+<!-- [Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://drive.google.com/file/d/1T3gJ_Dp67Buw7bR-p3ndFTJ1A1gmtILg/view?usp=drive_link) <br> Mingshan Chang, Min Yang<sup>*</sup>, Qingshan Jiang, Ruifeng Xu. AAAI, 2024.--> 
+
+>🔎 Huge success in the ABSA task❓ 🧐 We found that deep neural networks are prone to learning ***spurious correlations*** between input features and output labels, leading to poor robustness and generalization capability❗️
 
 <img src="/docs/example.png" width = "55%" />
 
