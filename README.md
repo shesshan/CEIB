@@ -12,9 +12,9 @@ Hi there👋, this repo contains the PyTorch implementation for our paper:
 to be present in AAAI 2024! 🎉
 
 ## 📜 Summary
-> 🔎 Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, leading to poor robustness and generalization!
+> Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, leading to poor robustness and generalization!
 
-An example of the spurious correlation problem:
+An example of the spurious correlation problem in ABSA:
 
 <img src="/docs/example.png" width = "55%" />
 
