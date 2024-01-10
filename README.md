@@ -69,4 +69,4 @@ url = {}
 }
 ```
 
-🤘Please cite our paper and kindly give a star if you find this repo useful💡.
+🤘Please cite our paper and kindly give a star if you find this repo helpful💡.
