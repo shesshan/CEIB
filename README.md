@@ -12,16 +12,16 @@ Hi there👋, this repo contains the PyTorch implementation for our paper:
 to be present in AAAI 2024! 🎉
 
 ## 📜 Summary
-> Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, leading to poor robustness and generalization!
+> Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, resulting in poor robustness and generalization capability!
 
 An example of the spurious correlation problem in ABSA:
 
 <img src="/docs/example.png" width = "55%" />
 
 To reduce **spurious correlations** for ABSA, we propose a novel **C**ounterfactual-**E**nhanced **I**nformation **B**ottleneck framework (called **CEIB**), which extends the information bottleneck (IB) principle to a factual-counterfactual balancing setting and incorporates augmented counterfactual data, to learn more robust and generalizable representations.
-- We employ the IB principle to discard spurious features or shallow patterns while preserving sufficient sentiment information about the target labels.
-- We devise a multi-pattern prompting method, which utilizes LLM to automatically generate counterfactual samples featuring identical spurious context words while different sentiment labels for the original training data.
-- We separate the mutual information in original IB objective into factual and counterfactual parts. By balancing the predictive information of these two parts, we can learn more robust and generalizable representations against the dataset bias.
+- We employ the IB principle to discard spurious features or shallow patterns while retaining sufficient information about the sentiment label.
+- We devise a multi-pattern prompting method, which utilizes LLM to automatically generate counterfactual samples featuring identical spurious context words but opposite sentiment polarities for the original training data.
+- We separate the mutual information in the original IB objective into factual and counterfactual parts. By balancing the predictive information of these two parts, we can learn more robust and generalizable representations against the dataset bias.
 
 ## 🧩 Architecture
 <img src="/docs/CEIB_framework.png" width = "88%" />
