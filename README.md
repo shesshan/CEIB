@@ -14,9 +14,9 @@ to be present in AAAI 2024! 🎉
 ## 📜 Summary
 > Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, resulting in poor robustness and generalization capability!
 
-An example of the spurious correlation problem in ABSA:
+📌 An example of the spurious correlation problem in ABSA:
 
-<img src="/docs/example.png" width = "55%" />
+<img src="/docs/example.png" width = "50%" />
 
 To reduce **spurious correlations** for ABSA, we propose a novel **C**ounterfactual-**E**nhanced **I**nformation **B**ottleneck framework (called **CEIB**), which extends the information bottleneck (IB) principle to a factual-counterfactual balancing setting and incorporates augmented counterfactual data, to learn more robust and generalizable representations.
 - We employ the IB principle to discard spurious features or shallow patterns while retaining sufficient information about the sentiment label.
@@ -24,7 +24,7 @@ To reduce **spurious correlations** for ABSA, we propose a novel **C**ounterfact
 - We separate the mutual information in the original IB objective into factual and counterfactual parts. By balancing the predictive information of these two parts, we can learn more robust and generalizable representations against the dataset bias.
 
 ## 🧩 Architecture
-<img src="/docs/CEIB_framework.png" width = "88%" />
+<img src="/docs/CEIB_framework.png" width = "90%" />
 
 (a) a **counterfactual data augmentation** module that utilizes LLM to generate counterfactual data for the original training data.
 
