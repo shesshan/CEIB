@@ -9,7 +9,7 @@ Hi there👋, this repo contains the PyTorch implementation for our paper:
 
 [Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis](https://ojs.aaai.org/index.php/AAAI/article/view/29726/31247) 
 
-Mingshan Chang, Min Yang, Qingshan Jiang, Ruifeng Xu. **AAAI**, 2024. 
+Mingshan Chang, Min Yang, Qingshan Jiang, Ruifeng Xu. AAAI, 2024. 
 
 ## 📜 Summary
 > Great success in the ABSA task? We found that deep ABSA models are prone to learning 🫧***spurious correlations***🫧 between input features and output labels, resulting in poor robustness and generalization capability!
