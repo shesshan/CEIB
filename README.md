@@ -56,17 +56,17 @@ Download the PyTorch version [bert-base-uncased](https://huggingface.co/bert-bas
 
 ### Citation
 ```bibtex
-@article{incoming~,
-title = {Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis},
-author = {Chang, Mingshan and Yang, Min and Jiang, Qingshan and Xu, Ruifeng},
-journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
-year = {2024},
-volume = {},
-pages = {},
-issn = {},
-doi = {},
-url = {}
+@article{Chang_Yang_Jiang_Xu_2024,
+  title={Counterfactual-Enhanced Information Bottleneck for Aspect-Based Sentiment Analysis},
+  volume={38},
+  url={https://ojs.aaai.org/index.php/AAAI/article/view/29726}, DOI={10.1609/aaai.v38i16.29726},
+  number={16},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  author={Chang, Mingshan and Yang, Min and Jiang, Qingshan and Xu, Ruifeng},
+  year={2024},
+  month={Mar.},
+  pages={17736-17744}
 }
 ```
 
-🤘Please cite our paper and kindly give a star if you find this repo helpful💡.
+🤘Please cite our paper and kindly give a star if you find this repo helpful.
